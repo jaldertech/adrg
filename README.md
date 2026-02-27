@@ -54,9 +54,11 @@ When the trigger clears, everything is restored automatically.
 
 | Requirement | Minimum | Notes |
 |---|---|---|
+| CPU | 4-core | ARM64 or x86_64 |
+| RAM | 4GB | 8GB+ recommended for high-density stacks |
 | Linux kernel | 4.20+ | For PSI support. 5.10+ recommended. |
 | cgroup v2 | Required | Verify: `ls /sys/fs/cgroup/cgroup.controllers` |
-| Docker | Any modern version | Uses the Docker SDK via `/var/run/docker.sock` |
+| Docker | v20.10+ | Uses the Docker SDK via `/var/run/docker.sock` |
 | Python | 3.9+ | |
 | Root access | Required | cgroup writes require root or `CAP_SYS_ADMIN` |
 
@@ -345,9 +347,9 @@ ADRG mounts `/var/run/docker.sock` to pause, unpause, and restart containers. An
 ## Tested Hardware
 
 | Hardware | OS | Status |
-|---|---|---|
-| Raspberry Pi 5 (4GB / 8GB) | Raspberry Pi OS Bookworm (64-bit) | ✅ Primary platform |
-| Intel N100 | Debian Bookworm | ✅ Confirmed working |
+| :--- | :--- | :--- |
+| **Raspberry Pi 5 (16GB RAM)** | Raspberry Pi OS Bookworm (64-bit) | ✅ Primary platform |
+| **Intel N100 (Mini PC)** | Debian Bookworm / Ubuntu 22.04+ | ✅ Confirmed working |
 
 ADRG should work on any Linux system meeting the requirements. If you get it running on other hardware, feel free to open a PR to add it to this table.
 
