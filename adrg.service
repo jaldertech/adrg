@@ -1,0 +1,26 @@
+[Unit]
+Description=Aldertech Dynamic Resource Governor
+Documentation=https://github.com/jaldertech/adrg
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=notify
+ExecStart=/usr/bin/python3 /opt/adrg/adrg.py --config /etc/adrg/config.yaml
+ExecStopPost=/usr/bin/python3 /opt/adrg/adrg.py --config /etc/adrg/config.yaml --cleanup
+Restart=on-failure
+RestartSec=5
+WatchdogSec=30
+RuntimeDirectory=adrg
+LogsDirectory=adrg
+Environment=PYTHONUNBUFFERED=1
+
+# Load API keys and webhook URLs from an optional secrets file.
+# Create /etc/adrg/adrg.env with lines like:
+#   ADRG_MEDIA_API_KEY=your_jellyfin_api_key
+#   ADRG_DISCORD_WEBHOOK_URL=https://discord.com/api/webhooks/...
+# The leading '-' means the file is optional — ADRG starts fine without it.
+EnvironmentFile=-/etc/adrg/adrg.env
+
+[Install]
+WantedBy=multi-user.target

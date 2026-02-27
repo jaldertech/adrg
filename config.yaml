@@ -1,0 +1,207 @@
+# ==============================================================================
+# Aldertech Dynamic Resource Governor (ADRG) — Configuration Template
+#
+# Copy this file to /etc/adrg/config.yaml and edit for your environment.
+# Sensitive values (API keys, tokens, passwords) can be provided as
+# environment variables using ${VAR_NAME} placeholders, which are expanded
+# at startup. Set them in /etc/adrg/adrg.env (installed by setup.sh).
+# ==============================================================================
+
+general:
+  poll_interval_seconds: 5
+  state_file: /run/adrg/state.json
+  log_file: /var/log/adrg/adrg.log
+  log_max_bytes: 10485760      # 10 MB
+  log_backup_count: 3
+
+  # HTTP server for /status and /trigger endpoints.
+  # Bind to 127.0.0.1 (default) for local access only.
+  # Set host: "0.0.0.0" only in trusted private networks.
+  http_server:
+    enabled: true
+    host: "127.0.0.1"
+    port: 8765
+
+
+# ==============================================================================
+# Container Tiers
+# ==============================================================================
+#
+# Tier 0 — Core infrastructure   : Maximum priority. Never throttled.
+# Tier 1 — Interactive services  : High priority. Protected during pressure.
+# Tier 2 — Background tasks      : Throttled during media playback.
+# Tier 3 — Bulk / batch tasks    : Paused during media playback.
+#                                   Restarted during memory emergencies.
+#
+# Container names support glob patterns, e.g. "tdarr*" matches tdarr,
+# tdarr_node, tdarr_node2, etc.
+#
+tiers:
+  0:
+    name: "Core Infra"
+    containers: []
+    cpu_weight: 1000
+    io_weight: 1000
+    # No memory limits for Tier 0
+  1:
+    name: "Interactive"
+    containers: []
+    cpu_weight: 800
+    io_weight: 800
+    memory_high: "3G"
+    memory_max: "4G"
+  2:
+    name: "Background"
+    containers: []
+    cpu_weight: 100
+    io_weight: 100
+    memory_high: "1.5G"
+    memory_max: "2G"
+  3:
+    name: "Bulk"
+    containers: []
+    cpu_weight: 10
+    io_weight: 10
+    memory_high: "2G"
+    memory_max: "3G"
+
+
+# ==============================================================================
+# Protected Containers
+# ==============================================================================
+#
+# ADRG will NEVER pause, throttle, or restart these containers, regardless
+# of thermal, memory, or I/O pressure. Use this to safeguard DNS, reverse
+# proxies, and other critical infrastructure.
+#
+protected_containers: []
+#  - pihole
+#  - nginx-proxy-manager
+#  - homeassistant
+
+
+# ==============================================================================
+# Media Mode
+# ==============================================================================
+#
+# When active media streams are detected, Tier 3 containers are paused and
+# Tier 2 containers have their CPU and I/O capped to preserve playback quality.
+# A cooldown period applies before restoring containers after streams end.
+#
+# provider: jellyfin  — Poll the Jellyfin /Sessions API
+#           plex      — Poll the Plex /status/sessions API
+#           webhook   — Controlled externally via POST /trigger
+#           none      — Disable media mode entirely
+#
+# TIP: Use internal Docker service names for 'url' (e.g. http://jellyfin:8096)
+# rather than external hostnames to avoid reverse proxy dependencies.
+#
+media_mode:
+  enabled: false
+  provider: jellyfin              # jellyfin | plex | webhook | none
+  url: "http://jellyfin:8096"
+  api_key: "${ADRG_MEDIA_API_KEY}"
+  tier2_cpu_max_percent: 20
+  tier2_io_max_read_mbps: 10
+  tier2_io_max_write_mbps: 5
+  cooldown_seconds: 60
+
+  # Optional: throttle a download client when media is playing.
+  # The limit is removed automatically when media mode deactivates.
+  download_throttle:
+    enabled: false
+    provider: qbittorrent
+    url: "http://qbittorrent:8080"
+    username: "admin"
+    password: "${ADRG_QB_PASSWORD}"
+    limit_mbps: 5                 # Download speed cap while media is active
+
+
+# ==============================================================================
+# Thermal Protection
+# ==============================================================================
+#
+# Reads the maximum temperature across all thermal zones. Applies two
+# escalating stages with hysteresis on recovery to prevent oscillation.
+#
+thermal:
+  enabled: true
+  warn_temp_c: 70         # Log warning only
+  stage1_temp_c: 75       # Pause Tier 3
+  stage2_temp_c: 80       # Pause Tier 2 + 3
+  recovery_temp_c: 65     # Must reach this temp before restoring
+  recovery_hold_seconds: 30  # Must hold below recovery_temp_c for this long
+
+
+# ==============================================================================
+# Memory Pressure
+# ==============================================================================
+#
+# Uses Linux PSI (Pressure Stall Information) for accurate memory pressure
+# detection. Applies three escalating stages:
+#   Stage 1: Squeeze memory.high on Tier 3 containers
+#   Stage 2: Restart the highest-RSS Tier 3 container (critical sustained pressure)
+#   Stage 3: Emergency restart (immediate, escalates to Tier 2 if Tier 3 exhausted)
+#
+# Requires PSI support in the kernel (/proc/pressure/memory).
+#
+memory_pressure:
+  enabled: true
+  pressure_avg10_threshold: 50       # % — triggers Stage 1 (squeeze memory.high)
+  critical_avg60_threshold: 40       # % — triggers Stage 2 (restart Tier 3)
+  emergency_full_avg10_threshold: 25 # % — triggers Stage 3 (emergency restart)
+  restart_cooldown_seconds: 300      # Min seconds between restarts per container
+  memory_high_reduction_factor: 0.75 # Multiply current RSS by this for new limit
+
+
+# ==============================================================================
+# I/O Pressure
+# ==============================================================================
+#
+# Caps Tier 3 disk I/O when system-wide I/O pressure is high, using PSI.
+# Recovery uses hysteresis: pressure must drop below recovery threshold
+# and hold there for recovery_hold_seconds before caps are removed.
+#
+# Requires PSI support in the kernel (/proc/pressure/io).
+#
+io_pressure:
+  enabled: true
+  trigger_avg10_threshold: 60     # % — apply io.max caps to Tier 3
+  recovery_avg10_threshold: 20    # % — begin recovery countdown
+  recovery_hold_seconds: 30
+  tier3_io_max_read_mbps: 5
+  tier3_io_max_write_mbps: 2
+
+
+# ==============================================================================
+# Notifications
+# ==============================================================================
+#
+# All backends are optional — leave empty or omit to disable.
+# Multiple backends can be active simultaneously.
+#
+# notify_on controls which events trigger notifications.
+# Remove events from the list to suppress those alerts.
+#
+notifications:
+  notify_on:
+    - daemon_start
+    - daemon_stop
+    - media_mode_activated
+    - media_mode_deactivated
+    - thermal_stage1
+    - thermal_stage2
+    - memory_critical_restart
+    - memory_emergency_restart
+
+  # Discord webhook
+  discord_webhook_url: "${ADRG_DISCORD_WEBHOOK_URL}"
+
+  # NTFY — self-hosted (https://github.com/binwiederhier/ntfy) or ntfy.sh
+  # Set ntfy_url to the full topic URL, e.g. https://ntfy.sh/my-adrg-topic
+  ntfy_url: "${ADRG_NTFY_URL}"
+  ntfy_token: "${ADRG_NTFY_TOKEN}"        # Optional: bearer token for private topics
+
+  # Gotify — self-hosted push notifications (https://gotify.net)
+  gotify_url: "${ADRG_GOTIFY_URL}"        # e.g. http://gotify.local
+  gotify_token: "${ADRG_GOTIFY_TOKEN}"    # Application token from the Gotify UI
