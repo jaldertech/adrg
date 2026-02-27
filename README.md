@@ -14,7 +14,9 @@ No more Jellyfin stuttering because Tdarr decided to transcode something. No mor
 
 A home server running 20–50 Docker containers on a Raspberry Pi 5 or an Intel N100 is constantly fighting itself. When a background task like a transcoder, unpacker, or backup agent wakes up, it competes for the same CPU, disk I/O, and RAM as your media server and dashboards.
 
-The Linux kernel has no way of knowing that your Jellyfin stream matters more than your torrent client. It gives them equal weight — and your film buffers.
+ADRG is specifically designed for enthusiasts managing **large personal media collections and legal backups** (e.g., digitized DVD/Blu-ray libraries). In these environments, high-bitrate video playback is the priority, but background maintenance tasks like library indexing or off-site backups can cause unacceptable stuttering.
+
+The Linux kernel has no way of knowing that your 4K local media stream matters more than a background file compression task. It gives them equal weight — and your film buffers.
 
 ---
 
@@ -37,8 +39,8 @@ When the trigger clears, everything is restored automatically.
 - **Four enforcer rules:** Media Mode, Thermal Protection, Memory Pressure, I/O Saturation
 - **PSI-based decisions:** Uses Linux Pressure Stall Information — far more accurate than load average
 - **Media providers:** Jellyfin, Plex, or webhook (for any other source)
-- **Download client throttle:** Automatically caps qBittorrent download speed during media playback
-- **Protected containers:** Tier 0 and an explicit list are never touched under any circumstance
+- **Download client throttle:** Automatically caps download speeds during media playback to preserve bandwidth for 4K streams.
+- **Enthusiast-focused:** Designed for users with large personal, legally-owned media libraries (digitized DVDs/Blu-rays) who want a seamless, high-performance home server experience.
 - **Glob pattern matching:** `tdarr*` in a tier matches `tdarr`, `tdarr_node`, `tdarr_node2`, etc.
 - **Notifications:** Discord, NTFY, and Gotify — all optional, all configurable
 - **HTTP API:** `/status` for live state, `/trigger` for external control (n8n, Home Assistant, scripts)
