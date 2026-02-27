@@ -107,6 +107,8 @@ journalctl -u adrg -f
 
 The full annotated template is installed at `/etc/adrg/config.yaml`. The key sections are:
 
+> **Important:** All container names shown below (e.g., `pihole`, `jellyfin`, `tdarr*`) are **examples based on successfully tested configurations**. ADRG is generic and will work with any Docker container on your system once you add its name or a matching glob pattern to a tier.
+
 ### Tiers
 
 Assign your containers to tiers. Names support glob patterns (`tdarr*`).

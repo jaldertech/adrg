@@ -33,8 +33,9 @@ general:
 # Tier 3 — Bulk / batch tasks    : Paused during media playback.
 #                                   Restarted during memory emergencies.
 #
-# Container names support glob patterns, e.g. "tdarr*" matches tdarr,
-# tdarr_node, tdarr_node2, etc.
+# NOTE: All container names shown in this file are EXAMPLES of successfully 
+# tested configurations. You must add your own container names or glob 
+# patterns (e.g. "tdarr*") to these lists to manage them with ADRG.
 #
 tiers:
   0:
