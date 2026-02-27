@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo.png" alt="Aldertech Logo" width="200"/>
+</p>
+
 # ADRG — Aldertech Dynamic Resource Governor
 
 > **"Why is Jellyfin stuttering every time my downloads start?"**
