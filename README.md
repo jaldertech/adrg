@@ -344,12 +344,18 @@ ADRG mounts `/var/run/docker.sock` to pause, unpause, and restart containers. An
 
 ---
 
-## Tested Hardware
+## Verified Hardware
+
+The following configurations have been verified to run ADRG in production:
 
 | Hardware | OS | Status |
 | :--- | :--- | :--- |
 | **Raspberry Pi 5 (16GB RAM)** | Raspberry Pi OS Bookworm (64-bit) | ✅ Primary platform |
-| **Intel N100 (Mini PC)** | Debian Bookworm / Ubuntu 22.04+ | ✅ Confirmed working |
+
+## Architecture & Compatibility
+ADRG is written in Python and uses generic Linux kernel interfaces (cgroup v2 and PSI). While developed on the Raspberry Pi 5, the codebase is architecturally agnostic and is designed to work on any 64-bit Linux system (x86_64 or ARM64) meeting the [Requirements](#requirements).
+
+Systems like the **Intel N100** (Mini PC) or **AMD Ryzen** home servers are likely compatible but have not yet been officially verified.
 
 ADRG should work on any Linux system meeting the requirements. If you get it running on other hardware, feel free to open a PR to add it to this table.
 
