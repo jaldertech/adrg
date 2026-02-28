@@ -44,7 +44,7 @@ from modules.webhook_server import WebhookServer
 
 # ── Constants ────────────────────────────────────────────────────────────
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 MBPS = 1_000_000  # Bytes per second per megabit (decimal)
 DEFAULT_CONFIG = "/etc/adrg/config.yaml"
 
