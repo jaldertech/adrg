@@ -34,4 +34,4 @@ This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.
 
 ## Licence
 
-By contributing, you agree that your contributions will be licensed under the same [MIT Licence](LICENCE) as the project.
+By contributing, you agree that your contributions will be licenced under the same [MIT Licence](LICENCE) as the project.
