@@ -10,6 +10,8 @@ ExecStart=/usr/bin/python3 /opt/adrg/adrg.py --config /etc/adrg/config.yaml
 ExecStopPost=/usr/bin/python3 /opt/adrg/adrg.py --config /etc/adrg/config.yaml --cleanup
 Restart=on-failure
 RestartSec=5
+# systemd-python must be installed for watchdog keepalives to function;
+# without it the daemon will be killed after this interval.
 WatchdogSec=30
 RuntimeDirectory=adrg
 LogsDirectory=adrg

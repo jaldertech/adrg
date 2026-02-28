@@ -65,6 +65,9 @@ When the trigger clears, everything is restored automatically.
 | Docker | v20.10+ | Uses the Docker SDK via `/var/run/docker.sock` |
 | Python | 3.9+ | |
 | Root access | Required | cgroup writes require root or `CAP_SYS_ADMIN` |
+| systemd-python | Optional* | *Required for host installs. See note below. |
+
+> **Note on systemd-python:** With `Type=notify` and `WatchdogSec=30` in the service unit, `systemd-python` is **required** for a host (systemd) install. Without it, systemd will kill the daemon 30 seconds after launch due to missed watchdog pings. It is optional only for the Docker install path (where the service unit is not used).
 
 ### Enabling cgroup v2
 
@@ -226,7 +229,7 @@ Uses Linux PSI (`/proc/pressure/memory`) for accurate, kernel-reported pressure 
 
 | Trigger | Action |
 |---|---|
-| `pressure_avg10` > 50% | Squeeze `memory.high` on Tier 3 containers (Stage 1) |
+| `some_avg10` > 50% | Squeeze `memory.high` on Tier 3 containers (Stage 1) |
 | `some_avg60` > 40% | Restart highest-RSS Tier 3 container (Stage 2) |
 | `full_avg10` > 25% | Emergency restart — escalates to Tier 2 if Tier 3 exhausted (Stage 3) |
 

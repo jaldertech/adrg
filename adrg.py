@@ -308,8 +308,9 @@ class Governor:
     Enforcer (action) into a single loop.
     """
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, config_path: str = DEFAULT_CONFIG):
         self.config = config
+        self._config_path = config_path
         self.tier_map, self.tier_patterns = build_tier_map(config)
         self._start_time = time.monotonic()
 
@@ -375,6 +376,7 @@ class Governor:
         self._thermal_stage = 0             # 0=normal, 1=stage1, 2=stage2
         self._memory_throttled = False
         self._io_throttled = False
+        self._io_recovery_since: Optional[float] = None
         self._applied_baselines: Dict[str, str] = {}  # name -> container_id
 
     # ── Signal handling ───────────────────────────────────────────────
@@ -386,7 +388,7 @@ class Governor:
     def _handle_sighup(self, signum, frame):
         logger.info("SIGHUP received — reloading configuration")
         try:
-            new_config = load_config()
+            new_config = load_config(self._config_path)
             self.config = new_config
             self.tier_map, self.tier_patterns = build_tier_map(new_config)
             self._protected_containers = set(new_config.get("protected_containers", []))
@@ -702,7 +704,7 @@ class Governor:
         if not mem_cfg.get("enabled", False):
             return
 
-        pressure_threshold = mem_cfg.get("pressure_avg10_threshold", 50)
+        pressure_threshold = mem_cfg.get("some_avg10_threshold", 50)
         critical_threshold = mem_cfg.get("critical_avg60_threshold", 40)
         emergency_threshold = mem_cfg.get("emergency_full_avg10_threshold", 25)
         cooldown = mem_cfg.get("restart_cooldown_seconds", 300)
@@ -863,6 +865,7 @@ class Governor:
                     psi.some_avg10, trigger,
                 )
                 self._io_throttled = True
+            self._io_recovery_since = None
 
             io_read = io_cfg.get("tier3_io_max_read_mbps", 5) * MBPS
             io_write = io_cfg.get("tier3_io_max_write_mbps", 2) * MBPS
@@ -875,15 +878,25 @@ class Governor:
                 cgroup.set_io_max(cid, io_read, io_write)
 
         elif self._io_throttled and psi.some_avg10 < recovery:
-            self._io_throttled = False
-            logger.info("I/O pressure recovered — removing Tier 3 I/O caps")
+            if self._io_recovery_since is None:
+                self._io_recovery_since = time.monotonic()
+                logger.info(
+                    "I/O recovery started (%.2f < %d)", psi.some_avg10, recovery
+                )
 
-            for name in resolve_tier_containers(
-                containers_in_tier(self.config, 3), running
-            ):
-                self.state.remove_io_max(name, reason)
-                if not self.state.should_have_io_max(name) and name in running:
-                    cgroup.remove_io_max(running[name].container_id)
+            if time.monotonic() - self._io_recovery_since >= recovery_hold:
+                self._io_throttled = False
+                self._io_recovery_since = None
+                logger.info("I/O pressure recovered — removing Tier 3 I/O caps")
+
+                for name in resolve_tier_containers(
+                    containers_in_tier(self.config, 3), running
+                ):
+                    self.state.remove_io_max(name, reason)
+                    if not self.state.should_have_io_max(name) and name in running:
+                        cgroup.remove_io_max(running[name].container_id)
+        else:
+            self._io_recovery_since = None
 
     # ── Cleanup ───────────────────────────────────────────────────────
 
@@ -1046,7 +1059,7 @@ def main():
     if not args.cleanup and not args.dry_run:
         run_preflight()
 
-    governor = Governor(config)
+    governor = Governor(config, args.config)
 
     if args.cleanup:
         governor.cleanup()

@@ -23,7 +23,7 @@ WORKDIR /app
 #     -v /proc:/host/proc:ro \
 #     -v /etc/adrg/config.yaml:/app/config.yaml:ro \
 #     --env-file /etc/adrg/adrg.env \
-#     aldertech/adrg
+#     ghcr.io/jaldertech/adrg
 
 # systemd-python is intentionally omitted: it requires libsystemd-dev at
 # build time and provides no benefit when running in Docker.

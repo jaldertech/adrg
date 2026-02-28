@@ -148,7 +148,7 @@ thermal:
 #
 memory_pressure:
   enabled: true
-  pressure_avg10_threshold: 50       # % — triggers Stage 1 (squeeze memory.high)
+  some_avg10_threshold: 50       # % — triggers Stage 1 (PSI "some" 10s avg, squeeze memory.high)
   critical_avg60_threshold: 40       # % — triggers Stage 2 (restart Tier 3)
   emergency_full_avg10_threshold: 25 # % — triggers Stage 3 (emergency restart)
   restart_cooldown_seconds: 300      # Min seconds between restarts per container
