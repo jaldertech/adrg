@@ -21,9 +21,13 @@ Please paste relevant logs from `journalctl -u adrg -f` or `docker logs adrg`.
 **Environment:**
  - OS: [e.g. Raspberry Pi OS Bookworm]
  - Hardware: [e.g. Raspberry Pi 5 16GB]
- - Kernel version: (run `uname -a`)
- - cgroup v2 status: (run `ls /sys/fs/cgroup/cgroup.controllers`)
- - Installation method: [Host (systemd) or Docker]
+ - Kernel: `uname -a`
+ - Python: `python3 --version`
+ - Docker: [version, e.g. from `docker --version`]
+ - cgroup v2: `ls /sys/fs/cgroup/cgroup.controllers` (confirm it exists)
+ - Installation: [Host (systemd) or Docker]
+
+**Config:** If relevant, paste the affected part of `config.yaml` with secrets redacted.
 
 **Additional context**
 Add any other context about the problem here.

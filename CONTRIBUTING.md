@@ -30,7 +30,7 @@ Thanks for your interest in contributing to ADRG (Aldertech Dynamic Resource Gov
 
 ## Code of conduct
 
-Be respectful and constructive. We’re building a small, practical tool for home-lab users; keep discussions on-topic and assume good intent.
+This project follows the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). Be respectful and constructive.
 
 ## Licence
 
