@@ -1,8 +1,8 @@
 docker>=7.0.0
 requests>=2.31.0
 PyYAML>=6.0.1
-# systemd-python is an optional dependency that enables sd_notify integration
-# (READY=1, WATCHDOG=1 signals) and the WatchdogSec feature in the systemd unit.
-# ADRG runs correctly without it — the daemon simply won't notify systemd of its
-# ready state. Install it if you want full systemd service type=notify support:
+# systemd-python enables sd_notify (READY=1, WATCHDOG=1) and WatchdogSec in the
+# systemd unit. Optional for Docker (the service unit is not used). Required for
+# host (systemd) installs — without it, systemd will kill the daemon after
+# WatchdogSec (e.g. 30s) due to missed watchdog pings. Install for host installs:
 #   sudo apt install libsystemd-dev && pip install systemd-python

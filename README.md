@@ -262,6 +262,8 @@ python3 adrg.py --cleanup
 kill -HUP $(pidof adrg)
 ```
 
+SIGHUP reloads tiers, media provider, and notifications. Changes to `download_throttle` or `http_server` require a daemon restart (`systemctl restart adrg`).
+
 ---
 
 ## HTTP API
