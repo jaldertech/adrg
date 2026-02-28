@@ -18,4 +18,4 @@ Please describe how you verified your changes.
 - [ ] My code follows the style guidelines of this project
 - [ ] I have performed a self-review of my code
 - [ ] I have commented my code, particularly in complex areas
-- [ ] I have updated the documentation (README.md)
+- [ ] I have updated the documentation (e.g. README.md, config.yaml comments) where relevant
