@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "adrg"
-version = "1.1.0"
+version = "1.1.1"
 authors = [
   { name="Aldertech", email="hello@aldertech.uk" },
 ]
@@ -31,6 +31,7 @@ adrg = "adrg:main"
 [project.urls]
 "Homepage" = "https://github.com/jaldertech/adrg"
 "Bug Tracker" = "https://github.com/jaldertech/adrg/issues"
+"Logo" = "https://raw.githubusercontent.com/jaldertech/adrg/main/assets/logo.png"
 
 [tool.setuptools]
 py-modules = ["adrg"]
