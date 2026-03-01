@@ -10,7 +10,7 @@ authors = [
 ]
 description = "Aldertech Dynamic Resource Governor. Monitors host pressure and enforces cgroups v2 limits to Docker containers."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -31,3 +31,8 @@ adrg = "adrg:main"
 [project.urls]
 "Homepage" = "https://github.com/jaldertech/adrg"
 "Bug Tracker" = "https://github.com/jaldertech/adrg/issues"
+
+[tool.setuptools]
+py-modules = ["adrg"]
+packages = ["modules"]
+

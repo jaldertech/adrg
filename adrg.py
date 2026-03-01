@@ -722,7 +722,7 @@ class Governor:
 
             tc = tier_config(self.config, 3)
             mem_max_raw = tc.get("memory_max", "3G")
-            floor = int(cgroup._parse_memory_value(mem_max_raw) * 0.5)
+            floor = int(cgroup.parse_memory_value(mem_max_raw) * 0.5)
 
             for name in resolve_tier_containers(
                 containers_in_tier(self.config, 3), running
@@ -768,7 +768,7 @@ class Governor:
                         cid = running[name].container_id
                         if mem_high:
                             cgroup.set_memory_high(
-                                cid, cgroup._parse_memory_value(mem_high)
+                                cid, cgroup.parse_memory_value(mem_high)
                             )
                         else:
                             cgroup.set_memory_high(cid, -1)

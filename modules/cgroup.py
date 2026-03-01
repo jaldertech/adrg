@@ -282,18 +282,18 @@ def apply_tier_defaults(container_id: str, tier_config: dict) -> None:
 
     mem_high = tier_config.get("memory_high")
     if mem_high:
-        set_memory_high(container_id, _parse_memory_value(mem_high))
+        set_memory_high(container_id, parse_memory_value(mem_high))
     else:
         set_memory_high(container_id, -1)
 
     mem_max = tier_config.get("memory_max")
     if mem_max:
-        set_memory_max(container_id, _parse_memory_value(mem_max))
+        set_memory_max(container_id, parse_memory_value(mem_max))
     else:
         set_memory_max(container_id, -1)
 
 
-def _parse_memory_value(value) -> int:
+def parse_memory_value(value) -> int:
     """
     Parse a memory value like '2G', '1.5G', '512M' into bytes.
     Also accepts raw integers (already in bytes).
