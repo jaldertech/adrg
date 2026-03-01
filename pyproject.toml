@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "adrg"
+version = "1.0.1"
+authors = [
+  { name="Aldertech", email="hello@aldertech.uk" },
+]
+description = "Aldertech Dynamic Resource Governor. Monitors host pressure and enforces cgroups v2 limits to Docker containers."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "Topic :: System :: Systems Administration",
+]
+dependencies = [
+    "docker>=7.0.0",
+    "requests>=2.31.0",
+    "PyYAML>=6.0.1"
+]
+
+[project.scripts]
+adrg = "adrg:main"
+
+[project.urls]
+"Homepage" = "https://github.com/jaldertech/adrg"
+"Bug Tracker" = "https://github.com/jaldertech/adrg/issues"
