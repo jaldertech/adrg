@@ -28,7 +28,7 @@ WORKDIR /app
 # systemd-python is intentionally omitted: it requires libsystemd-dev at
 # build time and provides no benefit when running in Docker.
 COPY requirements.txt .
-RUN pip install --no-cache-dir docker requests PyYAML
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY adrg.py .
 COPY modules/ modules/

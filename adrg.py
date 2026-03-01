@@ -45,7 +45,7 @@ from modules.webhook_server import WebhookServer
 # ── Constants ────────────────────────────────────────────────────────────
 
 VERSION = "1.0.1"
-MBPS = 1_000_000  # Bytes per second per megabit (decimal)
+MB_PER_SEC = 1_000_000  # Bytes per second per megabyte (decimal)
 DEFAULT_CONFIG = "/etc/adrg/config.yaml"
 
 # ── Logging setup ────────────────────────────────────────────────────────
@@ -224,8 +224,12 @@ def check_config_cmd(config: dict) -> bool:
         for tier_key, tier_cfg in tiers.items():
             containers = tier_cfg.get("containers", [])
             cpu_w = tier_cfg.get("cpu_weight", 100)
-            if not (1 <= int(cpu_w) <= 10000):
-                print(f"  ERROR: Tier {tier_key} cpu_weight {cpu_w} is out of range (1–10000)")
+            try:
+                if not (1 <= int(cpu_w) <= 10000):
+                    print(f"  ERROR: Tier {tier_key} cpu_weight {cpu_w} is out of range (1–10000)")
+                    ok = False
+            except ValueError:
+                print(f"  ERROR: Tier {tier_key} cpu_weight {cpu_w} is not a valid integer")
                 ok = False
             print(f"  Tier {tier_key} ({tier_cfg.get('name', '?')}): "
                   f"{len(containers)} container(s), cpu_weight={cpu_w}")
@@ -356,7 +360,7 @@ class Governor:
                 password=throttle_cfg.get("password", ""),
             )
             self._qb_limit_bytes = int(
-                throttle_cfg.get("limit_mbps", 5) * MBPS
+                throttle_cfg.get("limit_mb_per_sec", 5) * MB_PER_SEC
             )
 
         # Webhook / status HTTP server
@@ -397,6 +401,20 @@ class Governor:
             self._media_enabled = media_cfg.get("enabled", False)
             self._media_provider = media_cfg.get("provider", "none").lower()
             self.media_client = create_media_client(media_cfg) if self._media_enabled else None
+
+            # qBittorrent download throttle
+            throttle_cfg = media_cfg.get("download_throttle", {})
+            self._qb_client = None
+            self._qb_limit_bytes = 0
+            if self._media_enabled and throttle_cfg.get("enabled", False):
+                self._qb_client = QBittorrentClient(
+                    url=throttle_cfg.get("url", "http://qbittorrent:8080"),
+                    username=throttle_cfg.get("username", "admin"),
+                    password=throttle_cfg.get("password", ""),
+                )
+                self._qb_limit_bytes = int(
+                    throttle_cfg.get("limit_mb_per_sec", 5) * MB_PER_SEC
+                )
 
             notif_cfg = new_config.get("notifications", {})
             self.notifier = Notifier(
@@ -544,8 +562,8 @@ class Governor:
             num_cores = os.cpu_count() or 4
             quota_us = int((cpu_pct / 100.0) * 100000 * num_cores)
 
-            io_read = media_cfg.get("tier2_io_max_read_mbps", 10) * MBPS
-            io_write = media_cfg.get("tier2_io_max_write_mbps", 5) * MBPS
+            io_read = media_cfg.get("tier2_io_max_read_mb_per_sec", 10) * MB_PER_SEC
+            io_write = media_cfg.get("tier2_io_max_write_mb_per_sec", 5) * MB_PER_SEC
 
             for name in resolve_tier_containers(
                 containers_in_tier(self.config, 2), running
@@ -867,8 +885,8 @@ class Governor:
                 self._io_throttled = True
             self._io_recovery_since = None
 
-            io_read = io_cfg.get("tier3_io_max_read_mbps", 5) * MBPS
-            io_write = io_cfg.get("tier3_io_max_write_mbps", 2) * MBPS
+            io_read = io_cfg.get("tier3_io_max_read_mb_per_sec", 5) * MB_PER_SEC
+            io_write = io_cfg.get("tier3_io_max_write_mb_per_sec", 2) * MB_PER_SEC
 
             for name in resolve_tier_containers(
                 containers_in_tier(self.config, 3), running

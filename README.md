@@ -204,8 +204,8 @@ media_mode:
   url: "http://jellyfin:8096"
   api_key: "${ADRG_MEDIA_API_KEY}"
   tier2_cpu_max_percent: 20
-  tier2_io_max_read_mbps: 10
-  tier2_io_max_write_mbps: 5
+  tier2_io_max_read_mb_per_sec: 10
+  tier2_io_max_write_mb_per_sec: 5
   cooldown_seconds: 60
 
   download_throttle:        # Optional: cap download speed during playback
@@ -214,7 +214,7 @@ media_mode:
     url: "http://qbittorrent:8080"
     username: "admin"
     password: "${ADRG_QB_PASSWORD}"
-    limit_mbps: 5
+    limit_mb_per_sec: 5
 ```
 
 For `provider: webhook`, stream state is controlled externally via `POST /trigger` — useful for Plex users, Emby, or any custom trigger.

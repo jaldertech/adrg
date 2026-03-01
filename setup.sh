@@ -122,7 +122,6 @@ echo "[6/6] Installing and enabling systemd service..."
 cp "${ADRG_SRC}/adrg.service" "${SERVICE_DST}"
 systemctl daemon-reload
 systemctl enable "${SERVICE_NAME}"
-systemctl start "${SERVICE_NAME}"
 echo "      Done."
 
 # ── Summary ────────────────────────────────────────────────────────────────
