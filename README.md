@@ -89,6 +89,32 @@ systemd.unified_cgroup_hierarchy=1
 
 ## Quick Start
 
+### Option 1: Install via PyPI
+
+You can install ADRG directly from PyPI.
+
+```bash
+# 1. Install the package
+sudo pip3 install adrg --break-system-packages
+
+# 2. Download the default config file
+sudo mkdir -p /etc/adrg
+sudo wget https://raw.githubusercontent.com/jaldertech/adrg/main/config.yaml -O /etc/adrg/config.yaml
+sudo touch /etc/adrg/adrg.env
+
+# 3. Edit your config — assign containers to tiers
+sudo nano /etc/adrg/config.yaml
+
+# 4. Add your API keys
+sudo nano /etc/adrg/adrg.env
+
+# 5. Run the daemon
+sudo adrg
+```
+*(Note: To run as a background service, use the script in Option 2, or copy the `adrg.service` file from this repo).*
+
+### Option 2: Install via Git Clone (Includes systemd service)
+
 ```bash
 # 1. Clone the repository
 git clone https://github.com/jaldertech/adrg.git
