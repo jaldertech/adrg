@@ -382,6 +382,7 @@ class Governor:
         self._io_throttled = False
         self._io_recovery_since: Optional[float] = None
         self._applied_baselines: Dict[str, str] = {}  # name -> container_id
+        self._last_global_restart_at: float = 0.0
 
     # ── Signal handling ───────────────────────────────────────────────
 
@@ -793,39 +794,54 @@ class Governor:
 
         # Stage 3: Emergency restart (checked before Stage 2)
         if psi.full_avg10 > emergency_threshold:
-            target = self._find_restart_target(3, running, cooldown)
-            if target:
-                self.notifier.notify(
-                    "memory_emergency_restart",
-                    f"EMERGENCY: Memory PSI full avg10={psi.full_avg10:.2f} — "
-                    f"restarting {target}",
+            if time.monotonic() - self._last_global_restart_at < cooldown:
+                logger.info(
+                    "Memory pressure: Stage 3 restart suppressed — global cooldown active (%.0fs remaining)",
+                    cooldown - (time.monotonic() - self._last_global_restart_at),
                 )
-                self.state.record_restart(target)
-                self.state.clear_memory_high_override(target, reason)
-                self.docker.restart_container_async(target)
             else:
-                target2 = self._find_restart_target(2, running, cooldown)
-                if target2:
+                target = self._find_restart_target(3, running, cooldown)
+                if target:
                     self.notifier.notify(
                         "memory_emergency_restart",
-                        f"EMERGENCY ESCALATION: PSI full avg10={psi.full_avg10:.2f} — "
-                        f"Tier 3 exhausted, restarting Tier 2 container {target2}",
+                        f"EMERGENCY: Memory PSI full avg10={psi.full_avg10:.2f} — "
+                        f"restarting {target}",
                     )
-                    self.state.record_restart(target2)
-                    self.docker.restart_container_async(target2)
+                    self._last_global_restart_at = time.monotonic()
+                    self.state.record_restart(target)
+                    self.state.clear_memory_high_override(target, reason)
+                    self.docker.restart_container_async(target)
+                else:
+                    target2 = self._find_restart_target(2, running, cooldown)
+                    if target2:
+                        self.notifier.notify(
+                            "memory_emergency_restart",
+                            f"EMERGENCY ESCALATION: PSI full avg10={psi.full_avg10:.2f} — "
+                            f"Tier 3 exhausted, restarting Tier 2 container {target2}",
+                        )
+                        self._last_global_restart_at = time.monotonic()
+                        self.state.record_restart(target2)
+                        self.docker.restart_container_async(target2)
 
         # Stage 2: Critical restart
         elif psi.some_avg60 > critical_threshold:
-            target = self._find_restart_target(3, running, cooldown)
-            if target:
-                self.notifier.notify(
-                    "memory_critical_restart",
-                    f"Memory PSI critical (some avg60={psi.some_avg60:.2f}) — "
-                    f"restarting {target}",
+            if time.monotonic() - self._last_global_restart_at < cooldown:
+                logger.info(
+                    "Memory pressure: Stage 2 restart suppressed — global cooldown active (%.0fs remaining)",
+                    cooldown - (time.monotonic() - self._last_global_restart_at),
                 )
-                self.state.record_restart(target)
-                self.state.clear_memory_high_override(target, reason)
-                self.docker.restart_container_async(target)
+            else:
+                target = self._find_restart_target(3, running, cooldown)
+                if target:
+                    self.notifier.notify(
+                        "memory_critical_restart",
+                        f"Memory PSI critical (some avg60={psi.some_avg60:.2f}) — "
+                        f"restarting {target}",
+                    )
+                    self._last_global_restart_at = time.monotonic()
+                    self.state.record_restart(target)
+                    self.state.clear_memory_high_override(target, reason)
+                    self.docker.restart_container_async(target)
 
     def _find_restart_target(
         self,
