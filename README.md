@@ -394,6 +394,10 @@ ADRG should work on any Linux system meeting the requirements. If you get it run
 
 ---
 
+## Related Projects
+
+- **[ASG](https://github.com/jaldertech/asg)** — Aldertech Storage Governor: Intelligent health monitoring, capacity planning, and scrub scheduling for BTRFS RAID pools.
+
 ## Licence
 
 MIT — see `LICENCE` file.
